@@ -51,9 +51,9 @@ func init() {
 
 	user, err := user.Current()
 	if err != nil {
-		consumerGroup = "default-log-tailer"
+		consumerGroup = "default-topic-tailer"
 	} else {
-		consumerGroup = fmt.Sprintf("%s-log-tailer", user.Username)
+		consumerGroup = fmt.Sprintf("%s-topic-tailer", user.Username)
 	}
 
 }
