@@ -6,6 +6,7 @@ import (
 
 	"github.com/Shopify/sarama"
 	"github.com/fatih/color"
+	"github.com/hartfordfive/kafka-topic-tailer/lib"
 	"github.com/pquerna/ffjson/ffjson"
 )
 
@@ -59,7 +60,7 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 		if consumer.IsJSON {
 			ffjson.Unmarshal(message.Value, &msg)
 			fmt.Printf("[%s] [%s] %s\n",
-				cY(msg["@timestamp"].(string)),
+				cY(lib.FromUtcToLocalTime(msg["@timestamp"].(string))),
 				cG(msg["beat"].(map[string]interface{})["hostname"].(string)),
 				cW(msg["message"].(string)),
 			)
