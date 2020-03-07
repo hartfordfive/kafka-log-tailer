@@ -12,15 +12,25 @@ import (
 	"github.com/Shopify/sarama"
 )
 
+// Config specifies the configuration to use for the consumer client
+type Config struct {
+	FilterRegex   string
+	Brokers       []string
+	Topic         string
+	ConsumerGroup string
+	IsJSON        bool
+}
+
 // Run creates and configures the Kafka consumer to consume logs from the indicated topic
-func Run(brokers []string, topic, consumerGroup string, isJSON bool, config *sarama.Config) {
+//func Run(brokers []string, topic, consumerGroup string, isJSON bool, config *sarama.Config) {
+func Run(clientConfig *Config, config *sarama.Config) {
 	consumer := Consumer{
 		Ready:  make(chan bool),
-		IsJSON: isJSON,
+		IsJSON: clientConfig.IsJSON,
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
-	client, err := sarama.NewConsumerGroup(brokers, consumerGroup, config)
+	client, err := sarama.NewConsumerGroup(clientConfig.Brokers, clientConfig.ConsumerGroup, config)
 	if err != nil {
 		log.Panicf("Error creating consumer group client: %v", err)
 	}
@@ -33,7 +43,7 @@ func Run(brokers []string, topic, consumerGroup string, isJSON bool, config *sar
 			// `Consume` should be called inside an infinite loop, when a
 			// server-side rebalance happens, the consumer session will need to be
 			// recreated to get the new claims
-			if err := client.Consume(ctx, []string{topic}, &consumer); err != nil {
+			if err := client.Consume(ctx, []string{clientConfig.Topic}, &consumer); err != nil {
 				log.Panicf("Error from consumer: %v", err)
 			}
 			// check if context was cancelled, signaling that the consumer should stop
@@ -45,15 +55,15 @@ func Run(brokers []string, topic, consumerGroup string, isJSON bool, config *sar
 	}()
 
 	<-consumer.Ready // Await till the consumer has been set up
-	log.Println(fmt.Sprintf("Consuming logs from %s\n", topic))
+	log.Println(fmt.Sprintf("Consuming logs from %s\n", clientConfig.Topic))
 
 	sigterm := make(chan os.Signal, 1)
 	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
 	select {
 	case <-ctx.Done():
-		log.Println("terminating: context cancelled")
+		log.Println("Terminating...")
 	case <-sigterm:
-		log.Println("terminating: via signal")
+		log.Println("Shutting down...")
 	}
 	cancel()
 	wg.Wait()

@@ -33,6 +33,7 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 	// https://github.com/Shopify/sarama/blob/master/consumer_group.go#L27-L29
 	var msg map[string]interface{}
 	cY := color.New(color.FgYellow).Add(color.Bold)
+	cB := color.New(color.FgBlue)
 	cW := color.New(color.FgWhite)
 
 	for message := range claim.Messages() {
@@ -40,9 +41,10 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 		if consumer.IsJSON {
 			ffjson.Unmarshal(message.Value, &msg)
 			cY.Printf("[%s]", msg["@timestamp"].(string))
+			cB.Printf(" %s ::", msg["beat"].(map[string]interface{})["hostname"].(string))
 			cW.Printf(" %s\n", msg["message"].(string))
 		} else {
-			cW.Printf(" %s\n", string(message.Value))
+			cW.Printf("%s\n", string(message.Value))
 		}
 		session.MarkMessage(message, "")
 	}
