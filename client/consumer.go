@@ -34,10 +34,10 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 	// https://github.com/Shopify/sarama/blob/master/consumer_group.go#L27-L29
 	var msg map[string]interface{}
 	for message := range claim.Messages() {
-		//log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
+
 		if consumer.IsJSON {
-			ffjson.Unmarshal([]byte(message.Value), &msg)
-			fmt.Printf("[%s] %s", string(msg["@timestamp"].(string)), string(msg["message"].(string)))
+			ffjson.Unmarshal(message.Value, &msg)
+			fmt.Printf("[%s] %s\n", msg["@timestamp"].(string), msg["message"].(string))
 		} else {
 			fmt.Println(message.Value)
 		}
