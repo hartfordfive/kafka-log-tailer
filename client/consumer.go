@@ -37,9 +37,9 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 	// The `ConsumeClaim` itself is called within a goroutine, see:
 	// https://github.com/Shopify/sarama/blob/master/consumer_group.go#L27-L29
 	var msg map[string]interface{}
-	cY := color.New(color.FgYellow).Add(color.Bold)
-	cG := color.New(color.FgHiGreen)
-	cW := color.New(color.FgWhite)
+	cY := color.New(color.FgYellow).Add(color.Bold).SprintFunc()
+	cG := color.New(color.FgHiGreen).SprintFunc()
+	cW := color.New(color.FgWhite).SprintFunc()
 
 	for message := range claim.Messages() {
 
@@ -58,11 +58,13 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 
 		if consumer.IsJSON {
 			ffjson.Unmarshal(message.Value, &msg)
-			cY.Printf("[%s] ", msg["@timestamp"].(string))
-			cG.Printf("[%s] ", msg["beat"].(map[string]interface{})["hostname"].(string))
-			cW.Printf("%s\n", msg["message"].(string))
+			fmt.Printf("[%s] [%s] %s\n",
+				cY(msg["@timestamp"].(string)),
+				cG(msg["beat"].(map[string]interface{})["hostname"].(string)),
+				cW(msg["message"].(string)),
+			)
 		} else {
-			cW.Printf("%s\n", string(message.Value))
+			fmt.Printf("%s\n", cW(string(message.Value)))
 		}
 		session.MarkMessage(message, "")
 	}
