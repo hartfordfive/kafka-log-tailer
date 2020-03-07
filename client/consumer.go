@@ -39,7 +39,7 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 			ffjson.Unmarshal(message.Value, &msg)
 			fmt.Printf("[%s] %s\n", msg["@timestamp"].(string), msg["message"].(string))
 		} else {
-			fmt.Println(message.Value)
+			fmt.Println(string(message.Value))
 		}
 		session.MarkMessage(message, "")
 	}
