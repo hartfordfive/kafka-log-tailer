@@ -59,6 +59,7 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 
 		if consumer.IsJSON {
 			ffjson.Unmarshal(message.Value, &msg)
+			fmt.Println("Orig time: ", msg["@timestamp"].(string))
 			fmt.Printf("[%s] [%s] %s\n",
 				cY(lib.FromUtcToLocalTime(msg["@timestamp"].(string))),
 				cG(msg["beat"].(map[string]interface{})["hostname"].(string)),
