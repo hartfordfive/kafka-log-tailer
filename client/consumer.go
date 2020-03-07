@@ -1,7 +1,7 @@
 package client
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/Shopify/sarama"
 	"github.com/pquerna/ffjson/ffjson"
@@ -37,9 +37,9 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 		//log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
 		if consumer.IsJSON {
 			ffjson.Unmarshal([]byte(message.Value), &msg)
-			log.Printf("[%s] %s", msg["@timestamp"].(string), msg["message"].(string))
+			fmt.Printf("[%s] %s", string(msg["@timestamp"].(string)), string(msg["message"].(string)))
 		} else {
-			log.Println(message.Value)
+			fmt.Println(message.Value)
 		}
 		session.MarkMessage(message, "")
 	}
