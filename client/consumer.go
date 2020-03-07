@@ -14,6 +14,7 @@ type Consumer struct {
 	Ready       chan bool
 	IsJSON      bool
 	FilterRegex string
+	Debug       bool
 }
 
 // Setup is run at the beginning of a new session, before ConsumeClaim
@@ -37,24 +38,29 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 	// https://github.com/Shopify/sarama/blob/master/consumer_group.go#L27-L29
 	var msg map[string]interface{}
 	cY := color.New(color.FgYellow).Add(color.Bold)
-	cB := color.New(color.FgBlue)
+	cG := color.New(color.FgHiGreen)
 	cW := color.New(color.FgWhite)
 
 	for message := range claim.Messages() {
 
 		if consumer.FilterRegex != "" {
-			fmt.Println("Would filter here with regex")
 			re := regexp.MustCompile(consumer.FilterRegex)
 			if !re.Match(message.Value) {
+				if consumer.Debug {
+					fmt.Printf("Doesn't match regex %s\n", consumer.FilterRegex)
+				}
 				continue
+			}
+			if consumer.Debug {
+				fmt.Printf("Matches regex %s\n", consumer.FilterRegex)
 			}
 		}
 
 		if consumer.IsJSON {
 			ffjson.Unmarshal(message.Value, &msg)
-			cY.Printf("[%s]", msg["@timestamp"].(string))
-			cB.Printf(" %s ::", msg["beat"].(map[string]interface{})["hostname"].(string))
-			cW.Printf(" %s\n", msg["message"].(string))
+			cY.Printf("[%s] ", msg["@timestamp"].(string))
+			cG.Printf("[%s] ", msg["beat"].(map[string]interface{})["hostname"].(string))
+			cW.Printf("%s\n", msg["message"].(string))
 		} else {
 			cW.Printf("%s\n", string(message.Value))
 		}
