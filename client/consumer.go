@@ -1,9 +1,8 @@
 package client
 
 import (
-	"fmt"
-
 	"github.com/Shopify/sarama"
+	"github.com/fatih/color"
 	"github.com/pquerna/ffjson/ffjson"
 )
 
@@ -33,13 +32,17 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 	// The `ConsumeClaim` itself is called within a goroutine, see:
 	// https://github.com/Shopify/sarama/blob/master/consumer_group.go#L27-L29
 	var msg map[string]interface{}
+	cY := color.New(color.FgYellow).Add(color.Bold)
+	cW := color.New(color.FgWhite)
+
 	for message := range claim.Messages() {
 
 		if consumer.IsJSON {
 			ffjson.Unmarshal(message.Value, &msg)
-			fmt.Printf("[%s] %s\n", msg["@timestamp"].(string), msg["message"].(string))
+			cY.Printf("[%s]", msg["@timestamp"].(string))
+			cW.Printf(" %s\n", msg["message"].(string))
 		} else {
-			fmt.Println(string(message.Value))
+			cW.Printf(" %s\n", string(message.Value))
 		}
 		session.MarkMessage(message, "")
 	}
