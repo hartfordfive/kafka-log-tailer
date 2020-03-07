@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"regexp"
 	"sync"
 	"syscall"
 
@@ -14,7 +15,7 @@ import (
 
 // Config specifies the configuration to use for the consumer client
 type Config struct {
-	FilterRegex   *string
+	FilterRegex   string
 	Brokers       []string
 	Topic         string
 	ConsumerGroup string
@@ -29,7 +30,9 @@ func Run(clientConfig *Config, config *sarama.Config) {
 		IsJSON: clientConfig.IsJSON,
 	}
 
-	if clientConfig.FilterRegex != nil {
+	_, regexpErr := regexp.Compile(clientConfig.FilterRegex)
+
+	if clientConfig.FilterRegex != "" && regexpErr != nil {
 		consumer.FilterRegex = clientConfig.FilterRegex
 	}
 

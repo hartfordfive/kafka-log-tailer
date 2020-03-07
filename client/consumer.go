@@ -13,7 +13,7 @@ import (
 type Consumer struct {
 	Ready       chan bool
 	IsJSON      bool
-	FilterRegex *string
+	FilterRegex string
 }
 
 // Setup is run at the beginning of a new session, before ConsumeClaim
@@ -42,9 +42,9 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 
 	for message := range claim.Messages() {
 
-		if consumer.FilterRegex != nil {
+		if consumer.FilterRegex != "" {
 			fmt.Println("Would filter here with regex")
-			re := regexp.MustCompile(*consumer.FilterRegex)
+			re := regexp.MustCompile(consumer.FilterRegex)
 			if !re.Match(message.Value) {
 				continue
 			}
