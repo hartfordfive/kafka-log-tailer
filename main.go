@@ -17,12 +17,15 @@ var (
 	flagKafkaBrokers = ""
 	flagKafkaVersion = ""
 	flagTopic        = ""
-	flagRegex        = ""
 	flagFromOldest   = true
 	flagVersion      = true
 	flagIsJSON       = false
 	brokers          = []string{}
 	consumerGroup    = ""
+)
+
+var (
+	flagRegex *string
 )
 
 func init() {
@@ -31,7 +34,7 @@ func init() {
 	flag.StringVar(&flagKafkaVersion, "kver", "2.1.0", "Version of Kafka")
 	flag.BoolVar(&flagFromOldest, "oldest", true, "Kafka consumer consume initial offset from oldest")
 	flag.BoolVar(&flagIsJSON, "json", false, "Messages in the topic are json compliant payloads")
-	flag.StringVar(&flagRegex, "r", "", "Regex to isolate specific messages")
+	flag.StringVar(flagRegex, "r", "", "Regex to isolate specific messages")
 	flag.BoolVar(&flagVersion, "v", false, "Print version info and exit")
 	flag.Parse()
 

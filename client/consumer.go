@@ -1,6 +1,9 @@
 package client
 
 import (
+	"fmt"
+	"regexp"
+
 	"github.com/Shopify/sarama"
 	"github.com/fatih/color"
 	"github.com/pquerna/ffjson/ffjson"
@@ -8,8 +11,9 @@ import (
 
 // Consumer represents a Sarama consumer group consumer
 type Consumer struct {
-	Ready  chan bool
-	IsJSON bool
+	Ready       chan bool
+	IsJSON      bool
+	FilterRegex *string
 }
 
 // Setup is run at the beginning of a new session, before ConsumeClaim
@@ -37,6 +41,14 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 	cW := color.New(color.FgWhite)
 
 	for message := range claim.Messages() {
+
+		if consumer.FilterRegex != nil {
+			fmt.Println("Would filter here with regex")
+			re := regexp.MustCompile(*consumer.FilterRegex)
+			if !re.Match(message.Value) {
+				continue
+			}
+		}
 
 		if consumer.IsJSON {
 			ffjson.Unmarshal(message.Value, &msg)

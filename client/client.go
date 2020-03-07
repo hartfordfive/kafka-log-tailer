@@ -14,7 +14,7 @@ import (
 
 // Config specifies the configuration to use for the consumer client
 type Config struct {
-	FilterRegex   string
+	FilterRegex   *string
 	Brokers       []string
 	Topic         string
 	ConsumerGroup string
@@ -27,6 +27,10 @@ func Run(clientConfig *Config, config *sarama.Config) {
 	consumer := Consumer{
 		Ready:  make(chan bool),
 		IsJSON: clientConfig.IsJSON,
+	}
+
+	if clientConfig.FilterRegex != nil {
+		consumer.FilterRegex = clientConfig.FilterRegex
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
