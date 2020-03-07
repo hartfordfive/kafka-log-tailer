@@ -18,7 +18,7 @@ var (
 	flagKafkaVersion = ""
 	flagTopic        = ""
 	flagRegex        = ""
-	flagFromOldest   = true
+	flagFromOldest   = false
 	flagVersion      = true
 	flagIsJSON       = false
 	brokers          = []string{}
@@ -74,6 +74,8 @@ func main() {
 
 	if flagFromOldest {
 		config.Consumer.Offsets.Initial = sarama.OffsetOldest
+	} else {
+		config.Consumer.Offsets.Initial = sarama.OffsetNewest
 	}
 
 	// ---------------------------------
