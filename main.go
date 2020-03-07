@@ -19,6 +19,7 @@ var (
 	flagTopic        = ""
 	flagFromOldest   = true
 	flagVersion      = true
+	flagIsJson       = false
 	brokers          = []string{}
 	consumerGroup    = ""
 )
@@ -28,6 +29,7 @@ func init() {
 	flag.StringVar(&flagTopic, "topic", "", "Name of the log topic to consume from")
 	flag.StringVar(&flagKafkaVersion, "kver", "2.1.0", "Version of Kafka")
 	flag.BoolVar(&flagFromOldest, "oldest", true, "Kafka consumer consume initial offset from oldest")
+	flag.BoolVar(&flagIsJson, "json", false, "Messages in the topic are json compliant payloads")
 	flag.BoolVar(&flagVersion, "v", false, "Print version info and exit")
 	flag.Parse()
 
@@ -74,5 +76,5 @@ func main() {
 
 	// ---------------------------------
 
-	client.Run(brokers, flagTopic, consumerGroup, config)
+	client.Run(brokers, flagTopic, consumerGroup, flagIsJson, config)
 }

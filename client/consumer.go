@@ -4,11 +4,13 @@ import (
 	"log"
 
 	"github.com/Shopify/sarama"
+	"github.com/pquerna/ffjson/ffjson"
 )
 
 // Consumer represents a Sarama consumer group consumer
 type Consumer struct {
-	Ready chan bool
+	Ready  chan bool
+	IsJSON bool
 }
 
 // Setup is run at the beginning of a new session, before ConsumeClaim
@@ -30,8 +32,15 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 	// Do not move the code below to a goroutine.
 	// The `ConsumeClaim` itself is called within a goroutine, see:
 	// https://github.com/Shopify/sarama/blob/master/consumer_group.go#L27-L29
+	var msg map[string]interface{}
 	for message := range claim.Messages() {
-		log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
+		//log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
+		if consumer.IsJSON {
+			ffjson.Unmarshal([]byte(message.Value), &msg)
+			log.Printf("[%s] %s", msg["@timestamp"].(string), msg["message"].(string))
+		} else {
+			log.Println(message.Value)
+		}
 		session.MarkMessage(message, "")
 	}
 

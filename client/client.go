@@ -13,9 +13,10 @@ import (
 )
 
 // Run creates and configures the Kafka consumer to consume logs from the indicated topic
-func Run(brokers []string, topic, consumerGroup string, config *sarama.Config) {
+func Run(brokers []string, topic, consumerGroup string, isJSON bool, config *sarama.Config) {
 	consumer := Consumer{
-		Ready: make(chan bool),
+		Ready:  make(chan bool),
+		IsJSON: isJSON,
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
