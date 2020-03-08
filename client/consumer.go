@@ -53,13 +53,7 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 		if consumer.FilterRegex != "" {
 			re := regexp.MustCompile(consumer.FilterRegex)
 			if !re.Match(message.Value) {
-				if consumer.Debug {
-					fmt.Printf("Doesn't match regex %s\n", consumer.FilterRegex)
-				}
 				continue
-			}
-			if consumer.Debug {
-				fmt.Printf("Matches regex %s\n", consumer.FilterRegex)
 			}
 		}
 
