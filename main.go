@@ -82,7 +82,15 @@ func main() {
 	}
 
 	if flagDebug {
-
+		log.Printf("[DEBUG] flagKafkaBrokers = %s", flagKafkaBrokers)
+		log.Printf("[DEBUG] flagKafkaVersion = %s", flagKafkaVersion)
+		log.Printf("[DEBUG] flagTopic = %s", flagTopic)
+		log.Printf("[DEBUG] flagRegex = %s", flagRegex)
+		log.Printf("[DEBUG] consumerGroup = %s", consumerGroup)
+		log.Printf("[DEBUG] flagLocalTZ = %s", flagLocalTZ)
+		log.Printf("[DEBUG] flagFromOldest = %v", flagFromOldest)
+		log.Printf("[DEBUG] flagIsJSON = %v", flagIsJSON)
+		log.Printf("[DEBUG] flagDebug = %v", flagDebug)
 	}
 
 	// ---------------------------------
