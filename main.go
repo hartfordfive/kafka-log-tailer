@@ -21,6 +21,7 @@ var (
 	flagFromOldest   = false
 	flagVersion      = true
 	flagIsJSON       = false
+	flagDebug        = false
 	brokers          = []string{}
 	consumerGroup    = ""
 )
@@ -29,10 +30,11 @@ func init() {
 	flag.StringVar(&flagKafkaBrokers, "brokers", "", "Comma separated list of brokers in IP:PORT format")
 	flag.StringVar(&flagTopic, "topic", "", "Name of the log topic to consume from")
 	flag.StringVar(&flagKafkaVersion, "kver", "2.1.0", "Version of Kafka")
-	flag.BoolVar(&flagFromOldest, "oldest", true, "Kafka consumer consume initial offset from oldest")
+	flag.BoolVar(&flagFromOldest, "oldest", false, "Kafka consumer consume initial offset from oldest")
 	flag.BoolVar(&flagIsJSON, "json", false, "Messages in the topic are json compliant payloads")
 	flag.StringVar(&flagRegex, "r", "", "Regex to isolate specific messages")
 	flag.BoolVar(&flagVersion, "v", false, "Print version info and exit")
+	flag.BoolVar(&flagDebug, "d", false, "Enable debug mode logging")
 	flag.Parse()
 
 	if flagVersion {
@@ -71,11 +73,10 @@ func main() {
 	config := sarama.NewConfig()
 	config.Version = version
 	config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin
+	config.Consumer.Offsets.Initial = sarama.OffsetNewest
 
 	if flagFromOldest {
 		config.Consumer.Offsets.Initial = sarama.OffsetOldest
-	} else {
-		config.Consumer.Offsets.Initial = sarama.OffsetNewest
 	}
 
 	// ---------------------------------
@@ -86,7 +87,7 @@ func main() {
 		Topic:         flagTopic,
 		ConsumerGroup: consumerGroup,
 		IsJSON:        flagIsJSON,
+		Debug:         flagDebug,
 	}, config)
 
-	//client.Run(brokers, flagTopic, consumerGroup, flagIsJSON, config)
 }

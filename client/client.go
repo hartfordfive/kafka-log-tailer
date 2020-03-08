@@ -20,6 +20,7 @@ type Config struct {
 	Topic         string
 	ConsumerGroup string
 	IsJSON        bool
+	Debug         bool
 }
 
 // Run creates and configures the Kafka consumer to consume logs from the indicated topic
@@ -28,9 +29,14 @@ func Run(clientConfig *Config, config *sarama.Config) {
 	consumer := Consumer{
 		Ready:  make(chan bool),
 		IsJSON: clientConfig.IsJSON,
+		Debug:  clientConfig.Debug,
 	}
 
 	_, regexpErr := regexp.Compile(clientConfig.FilterRegex)
+
+	if regexpErr != nil {
+		log.Printf("[ERROR] Regex compilation error: %s\n", regexpErr)
+	}
 
 	if clientConfig.FilterRegex != "" && regexpErr != nil {
 		consumer.FilterRegex = clientConfig.FilterRegex
