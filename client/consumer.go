@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 
 	"github.com/Shopify/sarama"
@@ -43,10 +42,6 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 	cY := color.New(color.FgYellow).Add(color.Bold).SprintFunc()
 	cG := color.New(color.FgHiGreen).SprintFunc()
 	cW := color.New(color.FgWhite).SprintFunc()
-
-	if consumer.Debug {
-		log.Printf("[DEBUG] Filter regex: %s\n", consumer.FilterRegex)
-	}
 
 	for message := range claim.Messages() {
 
