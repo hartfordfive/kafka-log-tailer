@@ -15,6 +15,7 @@ type Consumer struct {
 	Ready       chan bool
 	IsJSON      bool
 	FilterRegex string
+	LocalTZ     string
 	Debug       bool
 }
 
@@ -61,7 +62,7 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 			ffjson.Unmarshal(message.Value, &msg)
 			fmt.Println("Orig time: ", msg["@timestamp"].(string))
 			fmt.Printf("[%s] [%s] %s\n",
-				cY(lib.FromUtcToLocalTime(msg["@timestamp"].(string))),
+				cY(lib.FromUtcToLocalTime(msg["@timestamp"].(string), consumer.LocalTZ)),
 				cG(msg["beat"].(map[string]interface{})["hostname"].(string)),
 				cW(msg["message"].(string)),
 			)

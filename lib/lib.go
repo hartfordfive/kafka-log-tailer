@@ -2,7 +2,6 @@ package lib
 
 import (
 	"fmt"
-	"io/ioutil"
 	"time"
 )
 
@@ -13,7 +12,7 @@ const (
 )
 
 // FromUtcToLocalTime takes a UTC time string and returns the time in the users current timezone
-func FromUtcToLocalTime(fromDateTime string) string {
+func FromUtcToLocalTime(fromDateTime, localTZ string) string {
 	// locallyEnteredDate := "2017-07-16"
 	// locallyEnteredTime := "14:00"
 
@@ -47,14 +46,12 @@ func FromUtcToLocalTime(fromDateTime string) string {
 	//now := time.Now()
 	//loc := now.Location()
 
-	tz, _ := ioutil.ReadFile("/etc/timezone")
-
 	t, err := time.Parse(time.RFC3339Nano, fromDateTime)
 	if err != nil {
 		return fromDateTime
 	}
 
-	loc, err := time.LoadLocation(string(tz))
+	loc, err := time.LoadLocation(localTZ)
 	if err != nil {
 		return fromDateTime
 	}

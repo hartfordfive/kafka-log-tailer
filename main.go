@@ -18,6 +18,7 @@ var (
 	flagKafkaVersion = ""
 	flagTopic        = ""
 	flagRegex        = ""
+	flagLocalTZ      = ""
 	flagFromOldest   = false
 	flagVersion      = true
 	flagIsJSON       = false
@@ -33,6 +34,7 @@ func init() {
 	flag.BoolVar(&flagFromOldest, "oldest", false, "Kafka consumer consume initial offset from oldest")
 	flag.BoolVar(&flagIsJSON, "json", false, "Messages in the topic are json compliant payloads")
 	flag.StringVar(&flagRegex, "r", "", "Regex to isolate specific messages")
+	flag.StringVar(&flagLocalTZ, "tz", "Etc/UTC", "Your local time zone, used to automatically transform timestamps.")
 	flag.BoolVar(&flagVersion, "v", false, "Print version info and exit")
 	flag.BoolVar(&flagDebug, "d", false, "Enable debug mode logging")
 	flag.Parse()
@@ -79,6 +81,10 @@ func main() {
 		config.Consumer.Offsets.Initial = sarama.OffsetOldest
 	}
 
+	if flagDebug {
+
+	}
+
 	// ---------------------------------
 
 	client.Run(&client.Config{
@@ -88,6 +94,7 @@ func main() {
 		ConsumerGroup: consumerGroup,
 		IsJSON:        flagIsJSON,
 		Debug:         flagDebug,
+		LocalTZ:       flagLocalTZ,
 	}, config)
 
 }

@@ -20,6 +20,7 @@ type Config struct {
 	Topic         string
 	ConsumerGroup string
 	IsJSON        bool
+	LocalTZ       string
 	Debug         bool
 }
 
@@ -27,9 +28,10 @@ type Config struct {
 //func Run(brokers []string, topic, consumerGroup string, isJSON bool, config *sarama.Config) {
 func Run(clientConfig *Config, config *sarama.Config) {
 	consumer := Consumer{
-		Ready:  make(chan bool),
-		IsJSON: clientConfig.IsJSON,
-		Debug:  clientConfig.Debug,
+		Ready:   make(chan bool),
+		IsJSON:  clientConfig.IsJSON,
+		Debug:   clientConfig.Debug,
+		LocalTZ: clientConfig.LocalTZ,
 	}
 
 	_, regexpErr := regexp.Compile(clientConfig.FilterRegex)
