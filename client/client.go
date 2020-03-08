@@ -40,14 +40,14 @@ func Run(clientConfig *Config, config *sarama.Config) {
 		log.Printf("[ERROR] Regex compilation error: %s\n", regexpErr)
 	}
 
-	if clientConfig.FilterRegex != "" && regexpErr != nil {
+	if clientConfig.FilterRegex != "" && regexpErr == nil {
 		consumer.FilterRegex = clientConfig.FilterRegex
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	client, err := sarama.NewConsumerGroup(clientConfig.Brokers, clientConfig.ConsumerGroup, config)
 	if err != nil {
-		log.Panicf("Error creating consumer group client: %v", err)
+		log.Panicf("[FATAL] Could not create consumer group client: %v", err)
 	}
 
 	wg := &sync.WaitGroup{}
@@ -59,7 +59,7 @@ func Run(clientConfig *Config, config *sarama.Config) {
 			// server-side rebalance happens, the consumer session will need to be
 			// recreated to get the new claims
 			if err := client.Consume(ctx, []string{clientConfig.Topic}, &consumer); err != nil {
-				log.Panicf("Error from consumer: %v", err)
+				log.Panicf("[FATAL] From consumer: %v", err)
 			}
 			// check if context was cancelled, signaling that the consumer should stop
 			if ctx.Err() != nil {
@@ -70,19 +70,19 @@ func Run(clientConfig *Config, config *sarama.Config) {
 	}()
 
 	<-consumer.Ready // Await till the consumer has been set up
-	log.Println(fmt.Sprintf("Consuming logs from %s\n", clientConfig.Topic))
+	log.Println(fmt.Sprintf("[INFO] Consuming logs from %s\n", clientConfig.Topic))
 
 	sigterm := make(chan os.Signal, 1)
 	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
 	select {
 	case <-ctx.Done():
-		log.Println("Terminating...")
+		log.Println("[INFO] Terminating...")
 	case <-sigterm:
-		log.Println("Shutting down...")
+		log.Println("[INFO] Shutting down...")
 	}
 	cancel()
 	wg.Wait()
 	if err = client.Close(); err != nil {
-		log.Panicf("Error closing client: %v", err)
+		log.Panicf("[FATAL] Error closing client: %v", err)
 	}
 }
