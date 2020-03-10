@@ -47,7 +47,7 @@ func Run(clientConfig *Config, config *sarama.Config) {
 	ctx, cancel := context.WithCancel(context.Background())
 	client, err := sarama.NewConsumerGroup(clientConfig.Brokers, clientConfig.ConsumerGroup, config)
 	if err != nil {
-		log.Panicf("[FATAL] Could not create consumer group client: %v", err)
+		log.Fatalf("[FATAL] Could not create consumer group client: %v\n", err)
 	}
 
 	wg := &sync.WaitGroup{}
@@ -59,7 +59,7 @@ func Run(clientConfig *Config, config *sarama.Config) {
 			// server-side rebalance happens, the consumer session will need to be
 			// recreated to get the new claims
 			if err := client.Consume(ctx, []string{clientConfig.Topic}, &consumer); err != nil {
-				log.Panicf("[FATAL] From consumer: %v", err)
+				log.Fatalf("[FATAL] From consumer: %v\n", err)
 			}
 			// check if context was cancelled, signaling that the consumer should stop
 			if ctx.Err() != nil {
@@ -83,6 +83,6 @@ func Run(clientConfig *Config, config *sarama.Config) {
 	cancel()
 	wg.Wait()
 	if err = client.Close(); err != nil {
-		log.Panicf("[FATAL] Error closing client: %v", err)
+		log.Fatalf("[FATAL] Error closing client: %v\n", err)
 	}
 }
