@@ -7,8 +7,8 @@ BASE_NAME=kafka-topic-tailer
 GO_DEP_FETCH=govendor fetch 
 UNAME=$(shell uname)
 BUILD_DIR=build/
-GITHASH=$(git rev-parse --verify HEAD)
-BUILDDATE=$(date +%Y-%m-%d)
+GITHASH=$(shell sh -c 'git rev-parse --verify HEAD')
+BUILDDATE=$(shell sh -c 'date +%Y-%m-%d')
 VERSION=$(shell sh -c 'cat VERSION.txt')
 PACKAGE_BASE=github.com/hartfordfive/kafka-topic-tailer
 
@@ -28,16 +28,21 @@ all: cleanall buildall
 
 # Cross compilation
 build:
-	CGO_ENABLED=0 GOOS=${OS} GOARCH=${ARCH} $(GOBUILD) -ldflags "-s -w -X $(PACKAGE_BASE)/version.CommitHash=$(GITHASH) -X $(PACKAGE_BASE)/version.BuildDate=$(BUILDDATE) -X $(PACKAGE_BASE)/version.Version=$(VERSION)" -o ${BUILD_DIR}$(BINARY_NAME) -v
+	CGO_ENABLED=0 GOOS=${OS} GOARCH=${ARCH} $(GOBUILD) -ldflags "-s -w -X $(PACKAGE_BASE)/version.commitHash=$(GITHASH) -X $(PACKAGE_BASE)/version.buildDate=$(BUILDDATE) -X $(PACKAGE_BASE)/version.version=$(VERSION)" -o ${BUILD_DIR}$(BINARY_NAME) -v
 
 build-all:
-	CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} $(GOBUILD) -ldflags "-s -w -X ${PACKAGE_BASE}/version.CommitHash=${GITHASH} -X ${PACKAGE_BASE}/version.BuildDate=${BUILDDATE} -X ${PACKAGE_BASE}/version.Version=${VERSION}" -o ${BUILD_DIR}$(BASE_NAME)-$(VERSION)-linux-$(ARCH) -v
-	CGO_ENABLED=0 GOOS=darwin GOARCH=${ARCH} $(GOBUILD) -ldflags "-s -w -X ${PACKAGE_BASE}/version.CommitHash=${GITHASH} -X ${PACKAGE_BASE}/version.BuildDate=${BUILDDATE} -X ${PACKAGE_BASE}/version.Version=${VERSION}" -o ${BUILD_DIR}$(BASE_NAME)-$(VERSION)-darwin-$(ARCH) -v
-	CGO_ENABLED=0 GOOS=windows GOARCH=${ARCH} $(GOBUILD) -ldflags "-s -w -X ${PACKAGE_BASE}/version.CommitHash=${GITHASH} -X ${PACKAGE_BASE}/version.BuildDate=${BUILDDATE} -X ${PACKAGE_BASE}/version.Version=${VERSION}" -o ${BUILD_DIR}$(BASE_NAME)-$(VERSION)-windows-$(ARCH) -v
-
+	CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} $(GOBUILD) -ldflags "-s -w -X ${PACKAGE_BASE}/version.commitHash=${GITHASH} -X ${PACKAGE_BASE}/version.buildDate=${BUILDDATE} -X ${PACKAGE_BASE}/version.version=${VERSION}" -o ${BUILD_DIR}$(BASE_NAME)-$(VERSION)-linux-$(ARCH) -v
+	CGO_ENABLED=0 GOOS=darwin GOARCH=${ARCH} $(GOBUILD) -ldflags "-s -w -X ${PACKAGE_BASE}/version.commitHash=${GITHASH} -X ${PACKAGE_BASE}/version.buildDate=${BUILDDATE} -X ${PACKAGE_BASE}/version.version=${VERSION}" -o ${BUILD_DIR}$(BASE_NAME)-$(VERSION)-darwin-$(ARCH) -v
+	CGO_ENABLED=0 GOOS=windows GOARCH=${ARCH} $(GOBUILD) -ldflags "-s -w -X ${PACKAGE_BASE}/version.commitHash=${GITHASH} -X ${PACKAGE_BASE}/version.buildDate=${BUILDDATE} -X ${PACKAGE_BASE}/version.version=${VERSION}" -o ${BUILD_DIR}$(BASE_NAME)-$(VERSION)-windows-$(ARCH) -v
 
 build-debug:
-	CGO_ENABLED=0 GOOS=${OS} GOARCH=amd64 $(GOBUILD) -ldflags "-X ${PACKAGE_BASE}/version.CommitHash=${GITHASH} -X ${PACKAGE_BASE}/version.BuildDate=${BUILDDATE} -X ${PACKAGE_BASE}/version.Version=${VERSION}" -o ${BUILD_DIR}$(BINARY_NAME) -v
+	CGO_ENABLED=0 GOOS=${OS} GOARCH=amd64 $(GOBUILD) -ldflags "-X ${PACKAGE_BASE}/version.commitHash=${GITHASH} -X ${PACKAGE_BASE}/version.buildDate=${BUILDDATE} -X ${PACKAGE_BASE}/version.version=${VERSION} -X ${PACKAGE_BASE}/version.symbolsEnabled=true" -o ${BUILD_DIR}$(BASE_NAME)-$(VERSION)-${OS}-$(ARCH)-debug -v
+
+build-all-debug:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -ldflags "-X ${PACKAGE_BASE}/version.commitHash=${GITHASH} -X ${PACKAGE_BASE}/version.buildDate=${BUILDDATE} -X ${PACKAGE_BASE}/version.version=${VERSION} -X ${PACKAGE_BASE}/version.symbolsEnabled=true" -o ${BUILD_DIR}$(BASE_NAME)-$(VERSION)-linux-$(ARCH)-debug -v
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -ldflags "-X ${PACKAGE_BASE}/version.commitHash=${GITHASH} -X ${PACKAGE_BASE}/version.buildDate=${BUILDDATE} -X ${PACKAGE_BASE}/version.version=${VERSION} -X ${PACKAGE_BASE}/version.symbolsEnabled=true" -o ${BUILD_DIR}$(BASE_NAME)-$(VERSION)-darwin-$(ARCH)-debug -v
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -ldflags "-X ${PACKAGE_BASE}/version.commitHash=${GITHASH} -X ${PACKAGE_BASE}/version.buildDate=${BUILDDATE} -X ${PACKAGE_BASE}/version.version=${VERSION} -X ${PACKAGE_BASE}/version.symbolsEnabled=true" -o ${BUILD_DIR}$(BASE_NAME)-$(VERSION)-windows-$(ARCH)-debug -v
+
 
 test: 
 	$(GOTEST) -v ./...

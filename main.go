@@ -28,13 +28,13 @@ var (
 )
 
 func init() {
-	flag.StringVar(&flagKafkaBrokers, "brokers", "", "Comma separated list of brokers in IP:PORT format")
-	flag.StringVar(&flagTopic, "topic", "", "Name of the log topic to consume from")
+	flag.StringVar(&flagKafkaBrokers, "brokers", "", "Comma separated list of kafka brokers in IP:PORT format")
+	flag.StringVar(&flagTopic, "topic", "", "Name of the kafka topic to consume from")
 	flag.StringVar(&flagKafkaVersion, "kver", "2.1.0", "Version of Kafka")
-	flag.BoolVar(&flagFromOldest, "oldest", false, "Kafka consumer consume initial offset from oldest")
-	flag.BoolVar(&flagIsJSON, "json", false, "Messages in the topic are json compliant payloads")
+	flag.BoolVar(&flagFromOldest, "oldest", false, "Start the kafka consumer from oldest ofset")
+	flag.BoolVar(&flagIsJSON, "json", false, "Parse log entry and only display `@timestamp`, `beat.hostname` and `message` fields")
 	flag.StringVar(&flagRegex, "r", "", "Regex to isolate specific messages")
-	flag.StringVar(&flagLocalTZ, "tz", "Etc/UTC", "Your local time zone, used to automatically transform timestamps.")
+	flag.StringVar(&flagLocalTZ, "tz", "Etc/UTC", "Convert the `@timestamp` value to a timezone of your choice.")
 	flag.BoolVar(&flagVersion, "v", false, "Print version info and exit")
 	flag.BoolVar(&flagDebug, "d", false, "Enable debug mode logging")
 	flag.Parse()
