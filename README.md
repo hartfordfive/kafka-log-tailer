@@ -23,7 +23,7 @@ This utility is intended to allow you to directly tail logs from kafka, which ha
 
 ### Download pre-compiled builds
 
-
+The pre-compiled releases can be found [here](https://github.com/hartfordfive/kafka-topic-tailer/releases)
 
 
 ### Building from source
