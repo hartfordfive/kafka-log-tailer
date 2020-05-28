@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
+	"strings"
 	"sync"
 	"syscall"
 
@@ -17,7 +18,7 @@ import (
 type Config struct {
 	FilterRegex   string
 	Brokers       []string
-	Topic         string
+	Topics        []string
 	ConsumerGroup string
 	IsJSON        bool
 	LocalTZ       string
@@ -58,7 +59,7 @@ func Run(clientConfig *Config, config *sarama.Config) {
 			// `Consume` should be called inside an infinite loop, when a
 			// server-side rebalance happens, the consumer session will need to be
 			// recreated to get the new claims
-			if err := client.Consume(ctx, []string{clientConfig.Topic}, &consumer); err != nil {
+			if err := client.Consume(ctx, clientConfig.Topics, &consumer); err != nil {
 				log.Fatalf("[FATAL] From consumer: %v\n", err)
 			}
 			// check if context was cancelled, signaling that the consumer should stop
@@ -70,7 +71,7 @@ func Run(clientConfig *Config, config *sarama.Config) {
 	}()
 
 	<-consumer.Ready // Await till the consumer has been set up
-	log.Println(fmt.Sprintf("[INFO] Consuming logs from %s\n", clientConfig.Topic))
+	log.Println(fmt.Sprintf("[INFO] Consuming logs from %s\n", strings.Join(clientConfig.Topics, ", ")))
 
 	sigterm := make(chan os.Signal, 1)
 	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
@@ -82,6 +83,10 @@ func Run(clientConfig *Config, config *sarama.Config) {
 	}
 	cancel()
 	wg.Wait()
+
+	log.Printf("[INFO] Total bytes consumed: %d\n", consumer.bytesConsumed)
+	log.Printf("[INFO] Total bytes displayed: %d\n", consumer.bytesDisplayed)
+
 	if err = client.Close(); err != nil {
 		log.Fatalf("[FATAL] Error closing client: %v\n", err)
 	}
