@@ -12,11 +12,13 @@ import (
 
 // Consumer represents a Sarama consumer group consumer
 type Consumer struct {
-	Ready       chan bool
-	IsJSON      bool
-	FilterRegex string
-	LocalTZ     string
-	Debug       bool
+	Ready          chan bool
+	IsJSON         bool
+	FilterRegex    string
+	LocalTZ        string
+	Debug          bool
+	bytesConsumed  uint64 // Total bytes consumed from all selected topics
+	bytesDisplayed uint64 // Number of bytes consumed from messages matching the regex
 }
 
 // Setup is run at the beginning of a new session, before ConsumeClaim
@@ -42,7 +44,12 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 	cG := color.New(color.FgHiGreen).SprintFunc()
 	cW := color.New(color.FgWhite).SprintFunc()
 
+	consumer.bytesConsumed = 0
+	consumer.bytesDisplayed = 0
+
 	for message := range claim.Messages() {
+
+		consumer.bytesConsumed += uint64(len(message.Value))
 
 		if consumer.FilterRegex != "" {
 			re := regexp.MustCompile(consumer.FilterRegex)
@@ -50,6 +57,8 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 				continue
 			}
 		}
+
+		consumer.bytesDisplayed += uint64(len(message.Value))
 
 		if consumer.IsJSON {
 			ffjson.Unmarshal(message.Value, &msg)

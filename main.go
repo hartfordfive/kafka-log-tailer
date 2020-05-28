@@ -10,26 +10,29 @@ import (
 
 	"github.com/Shopify/sarama"
 	"github.com/hartfordfive/kafka-topic-tailer/client"
+	"github.com/hartfordfive/kafka-topic-tailer/lib"
 	"github.com/hartfordfive/kafka-topic-tailer/version"
 )
 
 var (
-	flagKafkaBrokers = ""
-	flagKafkaVersion = ""
-	flagTopic        = ""
-	flagRegex        = ""
-	flagLocalTZ      = ""
-	flagFromOldest   = false
-	flagVersion      = true
-	flagIsJSON       = false
-	flagDebug        = false
-	brokers          = []string{}
-	consumerGroup    = ""
+	flagKafkaBrokers  = ""
+	flagKafkaVersion  = ""
+	flagTopics        = ""
+	flagConsumerGroup = ""
+	flagRegex         = ""
+	flagLocalTZ       = ""
+	flagFromOldest    = false
+	flagVersion       = true
+	flagIsJSON        = false
+	flagDebug         = false
+	brokers           = []string{}
+	consumerGroup     = ""
 )
 
 func init() {
 	flag.StringVar(&flagKafkaBrokers, "brokers", "", "Comma separated list of kafka brokers in IP:PORT format")
-	flag.StringVar(&flagTopic, "topic", "", "Name of the kafka topic to consume from")
+	flag.StringVar(&flagTopics, "topics", "", "Comma seperated list of topic to consume from")
+	flag.StringVar(&flagConsumerGroup, "cg", "", "Custom consumer group name (auto-generated if left empty)")
 	flag.StringVar(&flagKafkaVersion, "kver", "2.1.0", "Version of Kafka")
 	flag.BoolVar(&flagFromOldest, "oldest", false, "Start the kafka consumer from oldest ofset")
 	flag.BoolVar(&flagIsJSON, "json", false, "Parse log entry and only display `@timestamp`, `beat.hostname` and `message` fields")
@@ -49,15 +52,19 @@ func init() {
 		log.Fatal("At least one broker must be specified!")
 	}
 
-	if len(flagTopic) < 1 {
+	if len(flagTopics) < 1 {
 		log.Fatal("Must specify a topic name!")
 	}
 
 	user, err := user.Current()
-	if err != nil {
-		consumerGroup = "default-topic-tailer"
+	if flagConsumerGroup != "" && len(flagConsumerGroup) >= 3 {
+		consumerGroup = flagConsumerGroup
 	} else {
-		consumerGroup = fmt.Sprintf("%s-topic-tailer", user.Username)
+		if err != nil {
+			consumerGroup = fmt.Sprintf("default-topic-tailer-%s", lib.RndString(6))
+		} else {
+			consumerGroup = fmt.Sprintf("%s-topic-tailer-%s", user.Username, lib.RndString(6))
+		}
 	}
 
 }
@@ -84,7 +91,7 @@ func main() {
 	if flagDebug {
 		log.Printf("[DEBUG] flagKafkaBrokers = %s", flagKafkaBrokers)
 		log.Printf("[DEBUG] flagKafkaVersion = %s", flagKafkaVersion)
-		log.Printf("[DEBUG] flagTopic = %s", flagTopic)
+		log.Printf("[DEBUG] flagTopics = %s", flagTopics)
 		log.Printf("[DEBUG] flagRegex = %s", flagRegex)
 		log.Printf("[DEBUG] consumerGroup = %s", consumerGroup)
 		log.Printf("[DEBUG] flagLocalTZ = %s", flagLocalTZ)
@@ -95,10 +102,11 @@ func main() {
 
 	// ---------------------------------
 
+	topics := strings.Split(flagTopics, ",")
 	client.Run(&client.Config{
 		FilterRegex:   flagRegex,
 		Brokers:       brokers,
-		Topic:         flagTopic,
+		Topics:        topics,
 		ConsumerGroup: consumerGroup,
 		IsJSON:        flagIsJSON,
 		Debug:         flagDebug,
